@@ -1,7 +1,4 @@
 from math import ceil
-
-from pygame.display import update
-
 from Package import Package
 import pg
 
@@ -65,7 +62,7 @@ class WarehouseSystem:
         for line in range((len(self.cells) // 10) - 1, -1, -1):
             for i in range(10):
                 pos_i = i + line * 10
-                for pos_j in range(64, -1, -1):
+                for pos_j in range(64, -1 + size_y - 1, -1):
                     i_max = size_x + pos_i
                     j_min = pos_j - size_y
                     if i_max - line * 10 <= 10:
@@ -73,7 +70,7 @@ class WarehouseSystem:
                             for k in range(pos_i, i_max):
                                 for h in range(pos_j, j_min, -1):
                                     self.cells[k][h] = package_id
-                            return [pos_i + 1, j_min + 2, i_max, pos_j + 1]  # 1 65 3 65
+                            return [pos_i + 1, j_min + 2, i_max, pos_j + 1]
         return []
 
     def check(self, i_min, i_max, j_min, j_max):
@@ -93,8 +90,8 @@ class WarehouseSystem:
         all_package = self.get_all_packages()
         for i in range(len(all_package)):
             for id_pack in packs_id:
-                if int(all_package[i].split(';')[0]) == id_pack and all_package[i].split(';')[
-                    -1] == 'Хранится на складе':
+                if int(all_package[i].split(';')[0]) == id_pack and \
+                        all_package[i].split(';')[-1] == 'Хранится на складе':
                     self.remove_cell_from_cells(id_pack)
                     all_package[i] = all_package[i].replace('Хранится на складе', 'Выгружен')
         with open('data.txt', mode='w', encoding='utf-8') as file:
@@ -105,9 +102,6 @@ class WarehouseSystem:
         packs = self.get_all_packages()
         packs_id = [int(i.split(";")[0]) for i in packs if
                     i.split(";")[-1] == 'Хранится на складе' and int(i.split(';')[8].split('x')[0]) % 10 != 1]
-        #print(packs_id)
-        width = 0
-
         for id_pack in packs_id:
             flag = True
             count = 0
@@ -123,8 +117,6 @@ class WarehouseSystem:
                             if not flag:
                                 break
                             if self.cells[i][j] == id_pack:
-                                # width = [int(line.split(';')[8].split(':')[1].split('x')[1]) - (int(line.split(';')[8].split(':')[0].split('x')[1]) - 1) for line in packs if int(line.split(';')[0]) == id_pack][0]
-                                # print(width)
                                 if self.cells[i-count][j] != 0 or i - count < 0:
                                     flag = False
                                 else:
