@@ -92,38 +92,80 @@ class WarehouseSystem:
             for id_pack in packs_id:
                 if int(all_package[i].split(';')[0]) == id_pack and \
                         all_package[i].split(';')[-1] == 'Хранится на складе':
+                    y1 = int(all_package[i].split(';')[8].split(':')[0].split('x')[0]) - 1
+                    x1 = int(all_package[i].split(';')[8].split(':')[0].split('x')[1]) - 1
+                    y2 = int(all_package[i].split(';')[8].split(':')[1].split('x')[0])
+                    x2 = int(all_package[i].split(';')[8].split(':')[1].split('x')[1])
+                    id_packages = self.search_prevent_packages(x1, y2, x2)
+                    prevent_packages = [self.get_pos_package(pack_id) for pack_id in id_packages]
+                    another_pack = self.get_all_id()
+                    for id_p in id_packages:
+                        another_pack.remove(id_p)
+                    another_pack.remove(id_pack)
+                    another_packs = [self.get_pos_package(pack_id) for pack_id in another_pack]
+                    #update_packs = self.update_cells()
+                    pg.animation_unload_package(prevent_packages=prevent_packages,
+                                                unload_package=[x1, y1, y2 - y1, x2 - x1], another_packs=another_packs)
                     self.remove_cell_from_cells(id_pack)
                     all_package[i] = all_package[i].replace('Хранится на складе', 'Выгружен')
         with open('data.txt', mode='w', encoding='utf-8') as file:
             file.writelines(f"{item}\n" for item in all_package[:-1])
             file.writelines(all_package[-1])
 
+    def search_prevent_packages(self, x1, y2, x2):
+        res = list()
+        for y in range((y2 // 10) * 10 + 9, y2 - 1, -1):
+            for x in range(x1, x2):
+                if self.cells[y][x] != 0 and self.cells[y][x] not in res:
+                    res.append(self.cells[y][x])
+        return res
+
+    def get_pos_package(self, pack_id):
+        all_package = self.get_all_packages()
+        for pack in all_package:
+            if pack_id == int(pack.split(';')[0]) and pack.split(';')[-1] == 'Хранится на складе':
+                y1 = int(pack.split(';')[8].split(':')[0].split('x')[0]) - 1
+                x1 = int(pack.split(';')[8].split(':')[0].split('x')[1]) - 1
+                y2 = int(pack.split(';')[8].split(':')[1].split('x')[0])
+                x2 = int(pack.split(';')[8].split(':')[1].split('x')[1])
+                return [x1, y1, y2 - y1, x2 - x1]
+        return []
+
+    def get_all_id(self):
+        all_package = self.get_all_packages()
+        res = []
+        for pack in all_package:
+            if int(pack.split(';')[0]) not in res and pack.split(';')[-1] == 'Хранится на складе':
+                res.append(int(pack.split(';')[0]))
+        return res
+
     def update_cells(self):
         packs = self.get_all_packages()
         packs_id = [int(i.split(";")[0]) for i in packs if
                     i.split(";")[-1] == 'Хранится на складе' and int(i.split(';')[8].split('x')[0]) % 10 != 1]
+        res = []
         for id_pack in packs_id:
             flag = True
-            count = 0
             for i in range(1, len(self.cells)):
                 count = 1
                 if not flag:
                     break
                 if id_pack in self.cells[i]:
-                    j1 = [int(line.split(';')[8].split(':')[0].split('x')[1]) - 1 for line in packs if int(line.split(';')[0]) == id_pack][0]
-                    j2 = [int(line.split(';')[8].split(':')[1].split('x')[1]) for line in packs if int(line.split(';')[0]) == id_pack][0]
+                    j1 = [int(line.split(';')[8].split(':')[0].split('x')[1]) - 1 for line in packs if
+                          int(line.split(';')[0]) == id_pack][0]
+                    j2 = [int(line.split(';')[8].split(':')[1].split('x')[1]) for line in packs if
+                          int(line.split(';')[0]) == id_pack][0]
                     while flag:
                         for j in range(j1, j2):
                             if not flag:
                                 break
                             if self.cells[i][j] == id_pack:
-                                if self.cells[i-count][j] != 0 or i - count < 0:
+                                if self.cells[i - count][j] != 0 or i - count < 0:
                                     flag = False
                                 else:
                                     count += 1
                     for j in range(j1, j2):
-
-                        self.cells[i-count+1][j] = id_pack
+                        self.cells[i - count + 1][j] = id_pack
                         self.cells[i][j] = 0
                 for k in range(len(packs)):
                     if int(packs[k].split(';')[0]) == id_pack:
@@ -135,14 +177,8 @@ class WarehouseSystem:
                         x_max = int(pack[8].split(':')[1].split('x')[1])
                         pack[8] = f'{y_min}x{x_min}:{y_max}x{x_max}'
                         packs[k] = ';'.join(pack)
+                        res.append([[y_min, x_min, y_max, x_max], count])
         with open('data.txt', mode='w', encoding='utf-8') as file:
             file.writelines(f"{item}\n" for item in packs[:-1])
             file.writelines(packs[-1])
-
-
-
-
-
-
-
-
+        return res
