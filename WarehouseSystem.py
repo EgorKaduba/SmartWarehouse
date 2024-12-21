@@ -1,4 +1,7 @@
 from math import ceil
+
+from pygame.display import update
+
 from Package import Package
 import pg
 
@@ -44,8 +47,8 @@ class WarehouseSystem:
         except FileNotFoundError as error_msg:
             print(error_msg)
             return False
-        pg.get_from_db(self.read_db()[:-1],  new_pack=self.read_db()[-1])
-        return True # Москва ул. Утренняя;Пушкино ул. Набережная;22.12.2024;15x15x15;15.5;AAA
+        pg.get_from_db(self.read_db()[:-1], new_pack=self.read_db()[-1])
+        return True  # Москва ул. Утренняя;Пушкино ул. Набережная;22.12.2024;15x15x15;15.5;AAA
 
     @staticmethod
     def get_all_packages() -> list:
@@ -70,7 +73,7 @@ class WarehouseSystem:
                             for k in range(pos_i, i_max):
                                 for h in range(pos_j, j_min, -1):
                                     self.cells[k][h] = package_id
-                            return [pos_i + 1, j_min + 2, i_max, pos_j + 1] #1 65 3 65
+                            return [pos_i + 1, j_min + 2, i_max, pos_j + 1]  # 1 65 3 65
         return []
 
     def check(self, i_min, i_max, j_min, j_max):
@@ -90,7 +93,8 @@ class WarehouseSystem:
         all_package = self.get_all_packages()
         for i in range(len(all_package)):
             for id_pack in packs_id:
-                if int(all_package[i].split(';')[0]) == id_pack and all_package[i].split(';')[-1] == 'Хранится на складе':
+                if int(all_package[i].split(';')[0]) == id_pack and all_package[i].split(';')[
+                    -1] == 'Хранится на складе':
                     self.remove_cell_from_cells(id_pack)
                     all_package[i] = all_package[i].replace('Хранится на складе', 'Выгружен')
         with open('data.txt', mode='w', encoding='utf-8') as file:
@@ -98,6 +102,55 @@ class WarehouseSystem:
             file.writelines(all_package[-1])
 
     def update_cells(self):
-        for i in self.cells:
-            for j in self.cells:
-                pass
+        packs = self.get_all_packages()
+        packs_id = [int(i.split(";")[0]) for i in packs if
+                    i.split(";")[-1] == 'Хранится на складе' and int(i.split(';')[8].split('x')[0]) % 10 != 1]
+        #print(packs_id)
+        width = 0
+
+        for id_pack in packs_id:
+            flag = True
+            count = 0
+            for i in range(1, len(self.cells)):
+                count = 1
+                if not flag:
+                    break
+                if id_pack in self.cells[i]:
+                    j1 = [int(line.split(';')[8].split(':')[0].split('x')[1]) - 1 for line in packs if int(line.split(';')[0]) == id_pack][0]
+                    j2 = [int(line.split(';')[8].split(':')[1].split('x')[1]) for line in packs if int(line.split(';')[0]) == id_pack][0]
+                    while flag:
+                        for j in range(j1, j2):
+                            if not flag:
+                                break
+                            if self.cells[i][j] == id_pack:
+                                # width = [int(line.split(';')[8].split(':')[1].split('x')[1]) - (int(line.split(';')[8].split(':')[0].split('x')[1]) - 1) for line in packs if int(line.split(';')[0]) == id_pack][0]
+                                # print(width)
+                                if self.cells[i-count][j] != 0 or i - count < 0:
+                                    flag = False
+                                else:
+                                    count += 1
+                    for j in range(j1, j2):
+
+                        self.cells[i-count+1][j] = id_pack
+                        self.cells[i][j] = 0
+                for k in range(len(packs)):
+                    if int(packs[k].split(';')[0]) == id_pack:
+                        pack = packs[k].split(';')
+                        y_min = int(pack[8].split(':')[0].split('x')[0]) - count + 1
+                        print(count)
+                        y_max = int(pack[8].split(':')[1].split('x')[0]) - count + 1
+                        x_min = int(pack[8].split(':')[0].split('x')[1])
+                        x_max = int(pack[8].split(':')[1].split('x')[1])
+                        pack[8] = f'{y_min}x{x_min}:{y_max}x{x_max}'
+                        packs[k] = ';'.join(pack)
+        with open('data.txt', mode='w', encoding='utf-8') as file:
+            file.writelines(f"{item}\n" for item in packs[:-1])
+            file.writelines(packs[-1])
+
+
+
+
+
+
+
+

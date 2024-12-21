@@ -11,5 +11,7 @@ while True:
         warehouse.add_package(input("Введите информацию о новом товаре: "))
     elif choice == 3:
         warehouse.unloading_package([int(i) for i in input("Введите список id товаров: ").split(' ')])
+    elif choice == 5:
+        warehouse.update_cells()
     else:
         break

@@ -77,17 +77,24 @@ def get_from_db(packs, new_pack=None):
                 x1, y1 = 50 + gor * 17, 775 - ver * 17
                 pygame.draw.rect(sc, black, pygame.Rect(x1, y1, 15, 15), 2)
                 pygame.draw.rect(sc, orange, pygame.Rect(x1 + 2, y1 + 2, 11, 11))
-        for pack in packs:
-            y = pack[1]
-            y = (y // 10) * 10 + y
-            x1, y1 = 220 + pack[0] * 17, 27 + y * 17 + 1 if y == 0 else 27 + y * 17
-            pygame.draw.rect(sc, Color(199, 119, 28), pygame.Rect(x1, y1, 15 * pack[3], 15 * pack[2]))
+
         if new_pack is not None:
             y = new_pack[1]
             y = (y // 10) * 10 + y
-            x1, y1 = 220 + new_pack[0] * 17, 27 + y * 17 + 1 if y == 0 else 27 + y * 17
-            pygame.draw.rect(sc, Color(199, 119, 28), pygame.Rect(x1, y1, 15 * new_pack[3], 15 * new_pack[2]))
+            x1 = 220 + new_pack[0] * 15 + new_pack[0] * 2
+            y1 = 27 + y * 15 + y * 2
+            height = 15 * new_pack[2] + (new_pack[2] - 1) * 2
+            width = 15 * new_pack[3] + (new_pack[3] - 1) * 2
+            pygame.draw.rect(sc, Color(199, 119, 28), pygame.Rect(x1, y1, width, height))
 
+        for pack in packs:
+            y = pack[1]
+            y = (y // 10) * 10 + y
+            x1 = 220 + pack[0] * 15 + pack[0] * 2
+            y1 = 27 + y * 15 + y * 2
+            height = 15 * pack[2] + (pack[2] - 1) * 2
+            width = 15 * pack[3] + (pack[3] - 1) * 2
+            pygame.draw.rect(sc, Color(199, 119, 28), pygame.Rect(x1, y1, width, height))
         # обновляем окно
         pygame.display.update()
         clock.tick(fps)
