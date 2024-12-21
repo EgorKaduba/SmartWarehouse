@@ -1,5 +1,4 @@
 from idlelib.run import exit_now
-
 import pygame
 from pygame import Color
 import sys
@@ -14,7 +13,6 @@ orange = (255, 150, 100)
 black = (0, 0, 0)
 
 clock = pygame.time.Clock()
-
 
 
 def message(sc, font_style, msg, color, x, y):
@@ -59,8 +57,6 @@ def get_from_db(packs, new_pack=None):
         pygame.draw.rect(sc, Color("red"), pygame.Rect(932, 762, 11, 11))
         message(sc, font_style, "Сканер", black, 950, 750)
 
-        pygame.draw.rect(sc, Color("red"), pygame.Rect(230, 730, 30, 30))
-
         for ver in range(45):
             for gor in range(10):
                 x1, y1 = 50 + gor * 17, 775 - ver * 17
@@ -91,7 +87,6 @@ def get_from_db(packs, new_pack=None):
             width = 15 * pack[3] + (pack[3] - 1) * 2
             pygame.draw.rect(sc, Color(199, 119, 28), pygame.Rect(x1, y1, width, height))
 
-        if new_pack is not None:
             y = new_pack[1]
             y = (y // 10) * 10 + y
             height = 15 * new_pack[2] + (new_pack[2] - 1) * 2
@@ -113,6 +108,8 @@ def get_from_db(packs, new_pack=None):
                     if y_now != y_res:
                         y_now -= 1
             pygame.draw.rect(sc, Color(199, 119, 28), pygame.Rect(x_now, y_now, width, height))
+
+        pygame.draw.rect(sc, Color("red"), pygame.Rect(215, 730, 20, 30))
 
         # обновляем окно
         pygame.display.update()
