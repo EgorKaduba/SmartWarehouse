@@ -75,6 +75,87 @@ def get_from_db(packs, new_pack=None):
         clock.tick(fps)
 
 
+def animation_added_package(prevent_packages, new_package, another_packs):
+    sc = pygame.display.set_mode((win_width, win_height))
+    ind = [0 for _ in range(len(prevent_packages))]
+    y_con = [0 for _ in range(len(prevent_packages))]
+    jkh = 170
+    jkh_i = 1
+    flag = False
+    flag2 = True
+    flag3 = True
+    flag4 = False
+    new_x_now = 0
+    new_y_now = 0
+    while 1:
+        for i in pygame.event.get():
+            if i.type == pygame.QUIT:
+                pygame.display.quit()
+                return
+        # заливаем фон
+        sc.fill(white)
+        # рисуем легенду
+        print_legend(sc)
+        # рисуем склад
+        print_warehouse(sc)
+
+        for pack in another_packs:
+            y = pack[1]
+            y = (y // 10) * 10 + y
+            x1 = 220 + pack[0] * 15 + pack[0] * 2
+            y1 = 27 + y * 15 + y * 2
+            height = 15 * pack[2] + (pack[2] - 1) * 2
+            width = 15 * pack[3] + (pack[3] - 1) * 2
+            print_box(sc, x1, y1, width, height)
+        if not flag4:
+            for pack in prevent_packages:
+                y = pack[1]
+                y = (y // 10) * 10 + y
+                height = 15 * pack[2] + (pack[2] - 1) * 2
+                width = 15 * pack[3] + (pack[3] - 1) * 2
+                x_now = 220 + pack[0] * 15 + pack[0] * 2
+                y_now = 27 + y * 15 + y * 2 + ind[prevent_packages.index(pack)]
+                y_con[prevent_packages.index(pack)] = 27 + y * 15 + y * 2 + jkh
+                if y_now != y_con[prevent_packages.index(pack)]:
+                    ind[prevent_packages.index(pack)] += jkh_i
+                else:
+                    flag = True
+                    if not jkh:
+                        flag4 = True
+                        for b in prevent_packages:
+                            another_packs.append(b)
+                print_box(sc, x_now, y_now, width, height)
+
+        if (flag or not prevent_packages) and new_package:
+            y = new_package[1]
+            y = (y // 10) * 10 + y
+            height = 15 * new_package[2] + (new_package[2] - 1) * 2
+            width = 15 * new_package[3] + (new_package[3] - 1) * 2
+            x_res = 220 + new_package[0] * 15 + new_package[0] * 2
+            y_res = 27 + y * 15 + y * 2
+            if flag2:
+                new_x_now = 218 - width
+                new_y_now = 790 - height
+                flag2 = False
+            new_y_con = 197 if y < 11 else 537
+            if new_y_now != new_y_con and flag3:
+                new_y_now -= 1
+            else:
+                flag3 = False
+                if new_x_now != x_res:
+                    new_x_now += 1
+                else:
+                    if new_y_now != y_res:
+                        new_y_now -= 1
+                    else:
+                        jkh = 0
+                        jkh_i = -1
+            print_box(sc, new_x_now, new_y_now, width, height)
+        # обновляем окно
+        pygame.display.update()
+        clock.tick(fps)
+
+
 def animation_unload_package(prevent_packages, unload_package, another_packs, update_packs=None):
     sc = pygame.display.set_mode((win_width, win_height))
     flag = False
@@ -84,7 +165,9 @@ def animation_unload_package(prevent_packages, unload_package, another_packs, up
     unload_package_x_now = 0
     unload_package_y_now = 0
     ind = [0 for _ in range(len(prevent_packages))]
+    # ind1 = [0 for _ in range(len(update_packs))]
     y_con = [0 for _ in range(len(prevent_packages))]
+    # y_con1 = [0 for _ in range(len(update_packs))]
     jkh = 170
     jkh_i = 1
     while 1:
@@ -159,18 +242,6 @@ def animation_unload_package(prevent_packages, unload_package, another_packs, up
                 x = 220 + unload_package[0] * 15 + unload_package[0] * 2
                 y = 27 + y * 15 + y * 2
                 print_box(sc, x, y, width, height)
-        if flag4 and update_packs:
-            for pack in update_packs:
-                y = pack[0][1]
-                y = (y // 10) * 10 + y
-                height = 15 * pack[0][2] + (pack[0][2] - 1) * 2
-                width = 15 * pack[0][3] + (pack[0][3] - 1) * 2
-                x_now = 220 + pack[0][0] * 15 + pack[0][0] * 2
-                y_now = 27 + y * 15 + y * 2 + ind[update_packs.index(pack)]
-                y_con[update_packs.index(pack)] = 27 + y * 15 + y * 2 + pack[1] * 17
-                if y_now != y_con[update_packs.index(pack)]:
-                    ind[update_packs.index(pack)] -= 1
-                print_box(sc, x_now, y_now, width, height)
 
         # обновляем окно
         pygame.display.update()

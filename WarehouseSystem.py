@@ -29,6 +29,7 @@ class WarehouseSystem:
             if i % 10 == 0:
                 print("--------------------")
             print(self.cells[i])
+        self.update_cells()
         pg.get_from_db(self.read_db())
 
     def add_package(self, info: str):
@@ -37,14 +38,27 @@ class WarehouseSystem:
         pos = self.add_cell_in_cells(new_pack.size[0], new_pack.size[1], new_pack.id)
         if not pos:
             return False
-        new_pack.position = pos
+        new_pack.position = pos # 15 43 15 43
         try:
             with open("data.txt", mode='a', encoding='utf-8') as file:
                 file.write("\n" + str(new_pack))
         except FileNotFoundError as error_msg:
             print(error_msg)
             return False
-        pg.get_from_db(self.read_db()[:-1], new_pack=self.read_db()[-1])
+        x1 = new_pack.position[0] - 1
+        y1 = new_pack.position[1] - 1
+        x2 = new_pack.position[2]
+        y2 = new_pack.position[3]
+        id_packages = self.search_prevent_packages(y1, x2, y2)
+        prevent_packages = [self.get_pos_package(pack_id) for pack_id in id_packages]
+        added_packs = [y1, x1, x2 - x1, y2 - y1]
+        another_pack = self.get_all_id()
+        for id_p in id_packages:
+            another_pack.remove(id_p)
+        another_pack.remove(new_pack.id)
+        another_packs = [self.get_pos_package(pack_id) for pack_id in another_pack]
+        pg.animation_added_package(prevent_packages, added_packs, another_packs)
+        #pg.get_from_db(self.read_db()[:-1], new_pack=self.read_db()[-1])
         return True  # Москва ул. Утренняя;Пушкино ул. Набережная;22.12.2024;15x15x15;15.5;AAA
 
     @staticmethod
@@ -103,12 +117,8 @@ class WarehouseSystem:
                         another_pack.remove(id_p)
                     another_pack.remove(id_pack)
                     another_packs = [self.get_pos_package(pack_id) for pack_id in another_pack]
-                    update_packs = self.update_cells()
-                    for pack in update_packs:
-                        another_packs.remove(pack[0])
                     pg.animation_unload_package(prevent_packages=prevent_packages,
-                                                unload_package=[x1, y1, y2 - y1, x2 - x1], another_packs=another_packs,
-                                                update_packs=update_packs)
+                                                unload_package=[x1, y1, y2 - y1, x2 - x1], another_packs=another_packs)
                     self.remove_cell_from_cells(id_pack)
                     all_package[i] = all_package[i].replace('Хранится на складе', 'Выгружен')
         with open('data.txt', mode='w', encoding='utf-8') as file:
