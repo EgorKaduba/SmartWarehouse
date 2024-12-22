@@ -103,9 +103,12 @@ class WarehouseSystem:
                         another_pack.remove(id_p)
                     another_pack.remove(id_pack)
                     another_packs = [self.get_pos_package(pack_id) for pack_id in another_pack]
-                    #update_packs = self.update_cells()
+                    update_packs = self.update_cells()
+                    for pack in update_packs:
+                        another_packs.remove(pack[0])
                     pg.animation_unload_package(prevent_packages=prevent_packages,
-                                                unload_package=[x1, y1, y2 - y1, x2 - x1], another_packs=another_packs)
+                                                unload_package=[x1, y1, y2 - y1, x2 - x1], another_packs=another_packs,
+                                                update_packs=update_packs)
                     self.remove_cell_from_cells(id_pack)
                     all_package[i] = all_package[i].replace('Хранится на складе', 'Выгружен')
         with open('data.txt', mode='w', encoding='utf-8') as file:
@@ -146,38 +149,37 @@ class WarehouseSystem:
         res = []
         for id_pack in packs_id:
             flag = True
-            for i in range(1, len(self.cells)):
-                count = 1
-                if not flag:
-                    break
-                if id_pack in self.cells[i]:
-                    j1 = [int(line.split(';')[8].split(':')[0].split('x')[1]) - 1 for line in packs if
-                          int(line.split(';')[0]) == id_pack][0]
-                    j2 = [int(line.split(';')[8].split(':')[1].split('x')[1]) for line in packs if
-                          int(line.split(';')[0]) == id_pack][0]
-                    while flag:
+            count = 1
+            for line in range(1, -1, -1):
+                for i in range(1, 10):
+                    if id_pack in self.cells[line * 10 + i]:
+                        j1 = [int(line.split(';')[8].split(':')[0].split('x')[1]) - 1 for line in packs if
+                              int(line.split(';')[0]) == id_pack][0]
+                        j2 = [int(line.split(';')[8].split(':')[1].split('x')[1]) for line in packs if
+                              int(line.split(';')[0]) == id_pack][0]
+                        while flag:
+                            for j in range(j1, j2):
+                                if self.cells[line * 10 + i][j] == id_pack:
+                                    if (self.cells[line * 10 + i - count][j] != 0) or (i - count < 0):
+                                        flag = False
+                                        count -= 1
+                                        break
+                            else:
+                                count += 1
                         for j in range(j1, j2):
-                            if not flag:
-                                break
-                            if self.cells[i][j] == id_pack:
-                                if self.cells[i - count][j] != 0 or i - count < 0:
-                                    flag = False
-                                else:
-                                    count += 1
-                    for j in range(j1, j2):
-                        self.cells[i - count + 1][j] = id_pack
-                        self.cells[i][j] = 0
-                for k in range(len(packs)):
-                    if int(packs[k].split(';')[0]) == id_pack:
-                        pack = packs[k].split(';')
-                        y_min = int(pack[8].split(':')[0].split('x')[0]) - count + 1
-                        print(count)
-                        y_max = int(pack[8].split(':')[1].split('x')[0]) - count + 1
-                        x_min = int(pack[8].split(':')[0].split('x')[1])
-                        x_max = int(pack[8].split(':')[1].split('x')[1])
-                        pack[8] = f'{y_min}x{x_min}:{y_max}x{x_max}'
-                        packs[k] = ';'.join(pack)
-                        res.append([[y_min, x_min, y_max, x_max], count])
+                            self.cells[line * 10 + i][j] = 0
+                            self.cells[line * 10 + i - count][j] = id_pack
+            for k in range(len(packs)):
+                if int(packs[k].split(';')[0]) == id_pack:
+                    pack = packs[k].split(';')
+                    y_min = int(pack[8].split(':')[0].split('x')[0]) - count
+                    y_max = int(pack[8].split(':')[1].split('x')[0]) - count
+                    x_min = int(pack[8].split(':')[0].split('x')[1])
+                    x_max = int(pack[8].split(':')[1].split('x')[1])
+                    pack[8] = f'{y_min}x{x_min}:{y_max}x{x_max}'
+                    packs[k] = ';'.join(pack)
+                    if not count:
+                        res.append([[y_min, x_min, y_max - y_min, x_max - x_min], count])
         with open('data.txt', mode='w', encoding='utf-8') as file:
             file.writelines(f"{item}\n" for item in packs[:-1])
             file.writelines(packs[-1])

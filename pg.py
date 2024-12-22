@@ -9,11 +9,12 @@ win_height = 800
 white = (255, 255, 255)
 orange = (255, 150, 100)
 black = (0, 0, 0)
-
 clock = pygame.time.Clock()
+pygame.init()
+font_style = pygame.font.Font('my_font.ttf', 24)
 
 
-def message(sc, font_style, msg, color, x, y):
+def message(sc, msg, color, x, y):
     msg = str(msg)
     mesg = font_style.render(msg, True, color)
     sc.blit(mesg, (x, y))
@@ -28,7 +29,7 @@ def get_from_db(packs, new_pack=None):
     while 1:
         for i in pygame.event.get():
             if i.type == pygame.QUIT:
-                pygame.quit()
+                pygame.display.quit()
                 return
         # заливаем фон
         sc.fill(white)
@@ -89,7 +90,7 @@ def animation_unload_package(prevent_packages, unload_package, another_packs, up
     while 1:
         for i in pygame.event.get():
             if i.type == pygame.QUIT:
-                pygame.quit()
+                pygame.display.quit()
                 return
         # заливаем фон
         sc.fill(white)
@@ -177,28 +178,25 @@ def animation_unload_package(prevent_packages, unload_package, another_packs, up
 
 
 def print_legend(sc):
-    pygame.init()
-    font_style = pygame.font.Font('my_font.ttf', 24)
-
     pygame.draw.rect(sc, black, pygame.Rect(370, 720, 15, 15), 2)
     pygame.draw.rect(sc, orange, pygame.Rect(372, 722, 11, 11))
-    message(sc, font_style, "Лента загрузки/выгрузки", black, 390, 710)
+    message(sc, "Лента загрузки/выгрузки", black, 390, 710)
 
     pygame.draw.rect(sc, Color(34, 82, 17), pygame.Rect(370, 760, 15, 15), 2)
     pygame.draw.rect(sc, Color(62, 173, 23), pygame.Rect(372, 762, 11, 11))
-    message(sc, font_style, "Лента хранения", black, 390, 750)
+    message(sc, "Лента хранения", black, 390, 750)
 
     pygame.draw.rect(sc, Color(34, 82, 17), pygame.Rect(730, 720, 15, 15), 2)
     pygame.draw.rect(sc, Color(176, 189, 172), pygame.Rect(732, 722, 11, 11))
-    message(sc, font_style, "Лента транспортировки", black, 750, 710)
+    message(sc, "Лента транспортировки", black, 750, 710)
 
     pygame.draw.rect(sc, Color(34, 82, 17), pygame.Rect(730, 760, 15, 15), 2)
     pygame.draw.rect(sc, Color(199, 119, 28), pygame.Rect(732, 762, 11, 11))
-    message(sc, font_style, "Коробка", black, 750, 750)
+    message(sc, "Коробка", black, 750, 750)
 
     pygame.draw.rect(sc, Color(34, 82, 17), pygame.Rect(930, 760, 15, 15), 2)
     pygame.draw.rect(sc, Color("red"), pygame.Rect(932, 762, 11, 11))
-    message(sc, font_style, "Сканер", black, 950, 750)
+    message(sc, "Сканер", black, 950, 750)
 
 
 def print_warehouse(sc):
